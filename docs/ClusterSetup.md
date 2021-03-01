@@ -55,7 +55,7 @@ power_state:
 
 5. Allow Ubuntu to boot; DO NOT try to log into Ubuntu as soon as possible. Wait until Cloud-Init runs. If you don't wait you may not be able to logon with the default user and passwd. At the end of the cloud-init,Ubuntu will be rebooted. Wait a couple of minutes for the server to boot. You will see the red power LED flick on and off once when the system reboots. Continue to wait as the system boots a second time.
 
-You will need to connect to each Raspberry Pi in the following setup. Use the ethernet cable to plug the Pi into your computer (unfortunately one at a time).
+You will need to connect to each Raspberry Pi in the following setup. Use the ethernet cable to plug the Pi into your computer (unfortunately one at a time). Alternatively, you can use your home WiFi (easier) if you set it up as in the steps above.
 
 ### Assemble your Pis
 
@@ -81,27 +81,65 @@ When you SSH into the Pi for the first time the system will require a reboot. Ru
 Copy `setup/cluster_setup` onto the Pi. All the scripts below must be run from the `cluster_setup` directory so that they can reference the config files. Run as the root user by typing `sudo su root` first. 
 
 1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
-2. Run `setup/cluster_setup/pi_setup.sh` and reboot with `sudo reboot`.
+2. Run `setup/cluster_setup/pi_setup.sh`.
 3. Set the host name (edit the `etc/hostname` file). I set to `router-master-node`.
-4. Run `setup/cluster_setup/router_setup.sh` 
-5. Run `setup/cluster_setup/microk8s_setup.sh`
-6. Run `setup/cluster_setup/microk8s_master_init.sh`
-
-Make sure you write down (copy paste) the join command that is output when you run  `setup/cluster_setup/microk8s_master_init.sh`
-At this point you should disconnect the ehternet cable from your pi router and maker sure that you can SSH into the router.
+4. Reserve a static IP address. I choose one with the last byte equal to `200` to sync with my worker nodes.
+5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
+6. Setup the router - For now we're going to skip this set and connect all Pis over either your home wifi router or ethernet switch. This gives up on the private network, but we'll figure that out later.
+    1. Open the file `/etc/netplan/50-cloud-init.yaml` and add the following lines under the `wifis` header in the yaml file. Respect the 2-spaces indentation rule in the yaml file.
+        ```
+        wlan1:
+            addresses:
+            - 192.3.14.1/24
+            dhcp4: false
+            nameservers:
+                addresses:
+                - 8.8.8.8
+                - 8.8.4.4
+        ```
+    2. Run `netplan generate && netplan apply`
+    3. Run `setup/cluster_setup/router_setup.sh`
+7. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
 
 ### Setup the Worker Nodes
 
-1. Copy and run `setup/cluster_setup/pi_setup.sh` 
-2. Set the host name (edit the `etc/hostname` file). I followed the naming scheme TODO.
-3. Copy and run `setup/cluster_setup/microk8s_setup.sh`
-4. Copy and run `setup/cluster_setup/microk8s_worker_init.sh`
-5. Run the join command you made a note on in the previous step.
+1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
+2. Run `setup/cluster_setup/pi_setup.sh`.
+2. Set the host name (edit the `/etc/hostname` file). I followed the naming scheme `worker-node-2XX` starting from 201 (inclusive).
+4. Reserve a static IP address. I choose one with the last byte equal to the number on my worker node.
+5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
+6. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
 
-### Join the nodes together
+### Joining the nodes
 
-1. TODO
+Once each worker node has microk8s installed and running, give them 10 minutes. Sometimes microk8s will go down and then restart and this will result in a semi-permanent issue if it happens during cluster connection (fixed by `snap remove microk8s` and `snap install microk8s --classic --channel=1.20/stable` or by reinstalling the operating system with the imager).
 
+For each worker node do the following:
+
+1. On the master node run `microk8s add-node`.
+2. Copy the command created by the master node and execute it on the worker node you want to join the network.
+
+After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons.
+
+### Debugging
+
+* Join all nodes to your cluster before enabling add-ons (other than high availability). Otherwise nodes joining while high availability is on may fail to join.
+* It seems like high availability is a common source of error. Try disabling it. It's relatively new in version 1.20. In future versions, things may be more stable.
+* If an node is having trouble connecting to the cluster, or an error occurs when it connects, try running `microk8s remove-node IP-ADDRESS --force` and then removing it's IP address from `/var/snap/microk8s/current/var/kubernetes/backend/cluster.yaml`. This will help to "reset" the node. New nodes should not already be in the `cluster.yaml` file. [Issue](https://github.com/ubuntu/microk8s/issues/1967).
+* Consider using `/snap/microk8s/current/bin/dqlite -s file:///var/snap/microk8s/current/var/kubernetes/backend/cluster.yaml -c /var/snap/microk8s/current/var/kubernetes/backend/cluster.crt -k /var/snap/microk8s/current/var/kubernetes/backend/cluster.key -f json k8s ".remove <node-ip-with-port-19001>"` to fix a broken `cluster.yaml`. See [this issue](https://github.com/ubuntu/microk8s/issues/1880#issuecomment-760111637).
+* You can also use snap to uninstall and reinstall microk8s.
+
+* Relevant Issues
+    * [Error adding 3rd node, fresh install](https://github.com/ubuntu/microk8s/issues/2065)
+
+
+# Resource Usage
+
+Resource usage assumes you've followed the steps above and includes all services running on the machine, not just microk8s.
+
+* Around 1GB per Pi with no add-ons enabled.
+* Around 1.25GB per Pi only high availability enabled.
+* Around 1.4GB per Pi with the add-ons enabled by the scripts above.
 
 # Sources
 
