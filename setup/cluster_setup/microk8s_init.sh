@@ -9,5 +9,5 @@ snap install microk8s --classic --channel=1.20/stable && \
 microk8s.status --wait-ready && \
 usermod -a -G microk8s $1 && \
 chown -f -R $1 ~/.kube && \
-echo "alias kubectl='microk8s kubectl'" > /etc/profile.d/microk8s_aliases.sh && \
+echo $'alias kubectl=\'microk8s kubectl\'\nalias helm3=\'microk8s helm3\'' > /etc/profile.d/microk8s_aliases.sh && \
 sudo ufw allow in on vxlan.calico && sudo ufw allow out on vxlan.calico

@@ -1,0 +1,27 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    app: rook-nfs
+  name: node201-store
+parameters:
+  exportName: node201-share
+  nfsServerName: rook-nfs-201
+  nfsServerNamespace: rook-nfs
+provisioner: nfs.rook.io/rook-nfs-201-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    app: rook-nfs
+  name: node202-store
+parameters:
+  exportName: node202-share
+  nfsServerName: rook-nfs-202
+  nfsServerNamespace: rook-nfs
+provisioner: nfs.rook.io/rook-nfs-202-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

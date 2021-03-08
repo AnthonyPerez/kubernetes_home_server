@@ -82,7 +82,7 @@ Copy `setup/cluster_setup` onto the Pi. All the scripts below must be run from t
 
 1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
 2. Run `setup/cluster_setup/pi_setup.sh`.
-3. Set the host name (edit the `etc/hostname` file). I set to `router-master-node`.
+3. Set the host name (edit the `etc/hostname` file). I set to `node200`. Only use lowercase alphanumeric characters in your node name.
 4. Reserve a static IP address. I choose one with the last byte equal to `200` to sync with my worker nodes.
 5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
 6. Setup the router - For now we're going to skip this set and connect all Pis over either your home wifi router or ethernet switch. This gives up on the private network, but we'll figure that out later.
@@ -99,13 +99,17 @@ Copy `setup/cluster_setup` onto the Pi. All the scripts below must be run from t
         ```
     2. Run `netplan generate && netplan apply`
     3. Run `setup/cluster_setup/router_setup.sh`
+    4. Possible tutorials:
+      1. https://pimylifeup.com/raspberry-pi-wifi-extender/
+      2. https://stackoverflow.com/questions/37559668/raspberry-pi-3-wireless-hotspot-from-wifi-to-wifi-instead-of-ethernet-to-wifi
+      3. https://www.raspberrypi.org/forums/viewtopic.php?p=938306&sid=b950f5108774f76e0f3876c87c195961#p938306
 7. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
 
 ### Setup the Worker Nodes
 
 1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
 2. Run `setup/cluster_setup/pi_setup.sh`.
-2. Set the host name (edit the `/etc/hostname` file). I followed the naming scheme `worker-node-2XX` starting from 201 (inclusive).
+2. Set the host name (edit the `/etc/hostname` file). I followed the naming scheme `node2XX` starting from 201 (inclusive).  Only use lowercase alphanumeric characters in your node name.
 4. Reserve a static IP address. I choose one with the last byte equal to the number on my worker node.
 5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
 6. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
@@ -140,6 +144,13 @@ Resource usage assumes you've followed the steps above and includes all services
 * Around 1GB per Pi with no add-ons enabled.
 * Around 1.25GB per Pi only high availability enabled.
 * Around 1.4GB per Pi with the add-ons enabled by the scripts above.
+
+# (Optional) Setup a user and access the dashboard
+
+* Use the command `kubectl -n kubernetes-dashboard edit service kubernetes-dashboard` and change the line that says `type: ClusterIP` to `type: NodePort` (it's near the bottom of the file).
+* Run `kubectl apply -f setup/rbac_setup/adminuser.yaml`
+* Run `bash setup/rbac_setup/get_token.sh`
+* The last command will print a token, the NodePort, and the node name that you need to connect on. Then go to https://"your Pi's IP address":"Node Port".
 
 # Sources
 

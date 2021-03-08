@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: node201-pv
+  namespace: rook-nfs
+spec:
+  capacity:
+    storage: 298Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: nfs-local-storage
+  claimRef:
+    name: node201-nfs-claim
+    namespace: rook-nfs
+  local:
+    path: /mnt/hdd1/
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - node201
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node201-nfs-claim
+  namespace: rook-nfs
+spec:
+  storageClassName: nfs-local-storage
+  volumeName: node201-pv
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 298Gi
+---
+apiVersion: nfs.rook.io/v1alpha1
+kind: NFSServer
+metadata:
+  name: rook-nfs-201
+  namespace: rook-nfs
+spec:
+  replicas: 1
+  exports:
+  - name: node201-share
+    server:
+      accessMode: ReadWrite
+      squash: "none"
+    # A Persistent Volume Claim must be created before creating NFS CRD instance.
+    persistentVolumeClaim:
+      claimName: node201-nfs-claim
+  # A key/value list of annotations
+  annotations:
+    rook: nfs
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: node202-pv
+  namespace: rook-nfs
+spec:
+  capacity:
+    storage: 298Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: nfs-local-storage
+  claimRef:
+    name: node202-nfs-claim
+    namespace: rook-nfs
+  local:
+    path: /mnt/hdd1/
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - node202
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node202-nfs-claim
+  namespace: rook-nfs
+spec:
+  storageClassName: nfs-local-storage
+  volumeName: node202-pv
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 298Gi
+---
+apiVersion: nfs.rook.io/v1alpha1
+kind: NFSServer
+metadata:
+  name: rook-nfs-202
+  namespace: rook-nfs
+spec:
+  replicas: 1
+  exports:
+  - name: node202-share
+    server:
+      accessMode: ReadWrite
+      squash: "none"
+    # A Persistent Volume Claim must be created before creating NFS CRD instance.
+    persistentVolumeClaim:
+      claimName: node202-nfs-claim
+  # A key/value list of annotations
+  annotations:
+    rook: nfs
