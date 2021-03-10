@@ -17,10 +17,10 @@ Run the following steps on each node with storage.
     * If your device already has a file system use `fdisk` to delete any partitions on the disk and free all the space.
 3. Use `fdisk /dev/sda`, replacing `sda` with your device name to remove all partitions and create a new one. First type p to see the partitions. If there are none, type n, p, 1 and choose the defaults, then hit w to save (or q if you made a mistake and want to quit).
     * Record the space available on each device using `fdisk`. The example configs use `298Gi`.
-4. Use mkfs to create a filesystem on the new partition. e.g. `mkfs.ext4 /dev/sda1`.
+4. Use `mkfs.ext4` to create a filesystem on the new partition.
 5. Open `/etc/fstab` on each node and add all storage devices. You can find their UUIDs with `lsblk -f`. Use the following example:
     * `UUID=ce20c7d1-ccbd-4d54-8d3b-55574bd150ea       /mnt/hdd1/      ext4    defaults,noatime        0       0`
-6. Run `setup/storage_setup_nfs/prerequisites.sh`. Note: Run this script on all nodes, even those without the backing NFS storage device. Also note that this will restart microk8s and enables priviledged mode to kubectl and kube-apiserver.
+6. Run `setup/storage_setup_nfs/prerequisites.sh`. Note: Run this script on all nodes, even those without the backing NFS storage device.
 
 ## Rook NFS Setup (Master Node)
 
@@ -33,7 +33,7 @@ On the master node (with microk8s in high availability every node is a master no
     * The node names
     * Matching names for the PV and PVC across each set of PV+PVC+NFSServer
 
-Note that we use two NFSServers (even though multiple claims can be attached to the same server) because the server pod must run on the same node as the disk it is accessing when we use local persistent volumes. Our persistent volumes are on different nodes. But one NFSServer should be used for each node (with attached storage), regardless of the number of persistent volumes.
+Note that we use two NFSServers in the example (even though multiple claims can be attached to the same server) because the server pod must run on the same node as the disk it is accessing when we use local persistent volumes. Our persistent volumes are on different nodes in the example. But one NFSServer should be used for each node (with attached storage), and create a share for all of the persistent volumes on the node.
  
 2. Open `setup/storage_setup_nfs/sc.yaml` and create one storageClass for each share.
     * Note that the provisioner API path also changes with the `NFSServer` name. `nfs.rook.io/{NFSServer Name}-provisioner`

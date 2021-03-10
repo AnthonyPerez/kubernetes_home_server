@@ -5,16 +5,15 @@
 Let N be the number of Pis you want in your cluster. I choose N = 3.
 
 1. N x Raspberry Pi 4 Model B (4GB)
-3. N x MicroSD card 32GB
-2. 1 x Cat6 ethernet cable
-4. 1 x USB Micro SD Card Reader
-5. A raspberry pi cluster case.
-6. N x Short USB to USB-C cables.
-7. A multiport USB charger with at least 10W per port. You will want to check the voltage as well and may need to order multiple if N is large.
+2. N x MicroSD card 32GB
+3. 1 x USB Micro SD Card Reader
+4. A raspberry pi cluster case.
+5. N x Short USB to USB-C cables.
+6. A multiport USB charger with at least 10W per port. You will want to check the voltage as well and may need to order multiple if N is large.
 
 ### Cluster Architecture
 
-1. Inspired by the guides linked below, we will run a router on one of the master nodes to create a private network for the cluster. This approach will not scale well and will introduce a single point of failure, but will be sufficient for our purposes.
+Inspired by the guides linked below, we will run a router on one of the master nodes to create a private network for the cluster. This approach will not scale well and will introduce a single point of failure, but will be sufficient for our purposes.
 
 ### Install Ubuntu 20.04 LTS on your SD cards
 
@@ -76,41 +75,14 @@ You will need to connect to each Raspberry Pi in the following setup. Use the et
 
 When you SSH into the Pi for the first time the system will require a reboot. Run `sudo reboot`. Wait 3 minutes. SSH back into the Pi.
 
-### Setup the Pi Router and Master Node
+### Setup the Nodes
 
 Copy `setup/cluster_setup` onto the Pi. All the scripts below must be run from the `cluster_setup` directory so that they can reference the config files. Run as the root user by typing `sudo su root` first. 
 
 1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
 2. Run `setup/cluster_setup/pi_setup.sh`.
-3. Set the host name (edit the `etc/hostname` file). I set to `node200`. Only use lowercase alphanumeric characters in your node name.
-4. Reserve a static IP address. I choose one with the last byte equal to `200` to sync with my worker nodes.
-5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
-6. Setup the router - For now we're going to skip this set and connect all Pis over either your home wifi router or ethernet switch. This gives up on the private network, but we'll figure that out later.
-    1. Open the file `/etc/netplan/50-cloud-init.yaml` and add the following lines under the `wifis` header in the yaml file. Respect the 2-spaces indentation rule in the yaml file.
-        ```
-        wlan1:
-            addresses:
-            - 192.3.14.1/24
-            dhcp4: false
-            nameservers:
-                addresses:
-                - 8.8.8.8
-                - 8.8.4.4
-        ```
-    2. Run `netplan generate && netplan apply`
-    3. Run `setup/cluster_setup/router_setup.sh`
-    4. Possible tutorials:
-      1. https://pimylifeup.com/raspberry-pi-wifi-extender/
-      2. https://stackoverflow.com/questions/37559668/raspberry-pi-3-wireless-hotspot-from-wifi-to-wifi-instead-of-ethernet-to-wifi
-      3. https://www.raspberrypi.org/forums/viewtopic.php?p=938306&sid=b950f5108774f76e0f3876c87c195961#p938306
-7. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
-
-### Setup the Worker Nodes
-
-1. Open `etc/fstab`. Replace the line `LABEL=writable  /        ext4   defaults        0 0` with `LABEL=writable  /        ext4   defaults,noatime        0 0`
-2. Run `setup/cluster_setup/pi_setup.sh`.
-2. Set the host name (edit the `/etc/hostname` file). I followed the naming scheme `node2XX` starting from 201 (inclusive).  Only use lowercase alphanumeric characters in your node name.
-4. Reserve a static IP address. I choose one with the last byte equal to the number on my worker node.
+2. Set the host name (edit the `/etc/hostname` file). I followed the naming scheme `node2XX` starting from 200 (inclusive).  Only use lowercase alphanumeric characters in your node name.
+4. Reserve a static IP address. I choose one with the last byte equal to the number on my worker node (e.g. node `node200` has IP `XXX.XXX.XXX.200`).
 5. Run `setup/cluster_setup/microk8s_setup.sh` and reboot with `sudo reboot`.
 6. Run `setup/cluster_setup/microk8s_init.sh <username>` (replace <username> with your username which defaults to ubuntu)
 
@@ -120,7 +92,7 @@ Once each worker node has microk8s installed and running, give them 10 minutes. 
 
 For each worker node do the following:
 
-1. On the master node run `microk8s add-node`.
+1. On the master node (if you have high-availibility, which is enabled by default, pick an arbitrary but memorable node) run `microk8s add-node`.
 2. Copy the command created by the master node and execute it on the worker node you want to join the network.
 
 After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons.
