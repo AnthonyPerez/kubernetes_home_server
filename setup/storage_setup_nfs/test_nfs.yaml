@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name:  test-nfs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rook-nfs-pv-claim
+  namespace: test-nfs
+spec:
+  storageClassName: "worker201-store"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nfs-demo
+  name: nfs-busybox
+  namespace: test-nfs
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nfs-demo
+  template:
+    metadata:
+      labels:
+        app: nfs-demo
+    spec:
+      volumes:
+      - name: rook-nfs-vol
+        persistentVolumeClaim:
+          claimName: rook-nfs-pv-claim
+      terminationGracePeriodSeconds: 5
+      containers:
+      - image: busybox
+        imagePullPolicy: IfNotPresent
+        name: busybox
+        volumeMounts:
+        - name: rook-nfs-vol
+          mountPath: "/mnt"
+        command:
+          - sh 
+        args:
+          - -c
+          - |
+            while true; do
+              echo "$(date) $(hostname)" > /mnt/shared.log
+              sleep $(($RANDOM % 5 + 5))
+            done
