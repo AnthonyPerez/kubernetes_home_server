@@ -95,7 +95,7 @@ For each worker node do the following:
 1. On the master node (if you have high-availibility, which is enabled by default, pick an arbitrary but memorable node) run `microk8s add-node`.
 2. Copy the command created by the master node and execute it on the worker node you want to join the network.
 
-After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons.
+After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons. If you have any configuration preferences for add-ons, you may want to edit the `setup/cluster_setup/microk8s_master_init.sh` file. In particular the load balancer's range of allowed IPs should be configured to match the set of nodes' IP address.
 
 ### Debugging
 
