@@ -23,7 +23,7 @@ kubectl create secret generic -n nextcloud nextcloud-tls \
 rm key.pem cert.pem
 ```
 
-2. Deploy the `nextcloud.yaml` file. `kubectl apply -f apps/nextcloud/deployment/nextcloud.yaml`.
+2. Login into the node where the nextcloud PV will be created and make the required path. If you're following the rest of the guide, the commmand would be `mkdir /mnt/hdd1/nextcloud`. Deploy the `nextcloud.yaml` file. `kubectl apply -f apps/nextcloud/deployment/nextcloud.yaml`.
 
 3. Once the nextcloud server is running, log in and set your username and password. The storage & database credentials should already be setup from the deployment's environment variables. If you need to manually set them open the storage & credential settings as use the following parameters:
 

@@ -1,5 +1,16 @@
 # Apps
 
+## Storage
+
+Node 201 - 298Gi
+
+* NFS 150Gi - /mnt/hdd1/nfs/
+
+Node 202 - 298Gi
+
+* NFS 100Gi - /mnt/hdd1/nfs/
+* NextCloud 50Gi - /mnt/hdd1/nextcloud/
+
 ## Networking
 
 Apps are deployed using services of type `LoadBalanced` to the IP address `192.168.86.201` (the ingress already uses `192.168.86.200` and is a nice to have). For the sake of simplicity, all apps will use sequential ports starting from 9000. Here are the currently requisitioned ports.
