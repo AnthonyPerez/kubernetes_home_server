@@ -117,13 +117,6 @@ Resource usage assumes you've followed the steps above and includes all services
 * Around 1.25GB per Pi only high availability enabled.
 * Around 1.4GB per Pi with the add-ons enabled by the scripts above.
 
-# (Optional) Setup a user and access the dashboard
-
-* Use the command `kubectl -n kubernetes-dashboard edit service kubernetes-dashboard` and change the line that says `type: ClusterIP` to `type: NodePort` (it's near the bottom of the file).
-* Run `kubectl apply -f setup/rbac_setup/adminuser.yaml`
-* Run `bash setup/rbac_setup/get_token.sh`
-* The last command will print a token, the NodePort, and the node name that you need to connect on. Then go to https://"your Pi's IP address":"Node Port".
-
 # Sources
 
 1. https://vpn-expert.info/ubuntu-20-04-lts-install-and-setup-on-raspberry-pi-desktop/

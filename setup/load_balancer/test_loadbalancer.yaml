@@ -6,7 +6,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: test-server-deployment
   namespace: test-load-balancer
   labels:
     app: test-lb
@@ -14,26 +14,27 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      pod-label: testlb-nginx
+      pod-label: testlb-server
   template:
     metadata:
       labels:
-        pod-label: testlb-nginx
+        pod-label: testlb-server
     spec:
       containers:
-      - name: nginx
+      - name: test-server
         image: nginx:1.19-alpine
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: testlb-nginx
+  name: testlb-server
   namespace: test-load-balancer
   labels:
     app: test-lb
 spec:
+  type: NodePort
   selector:
-    pod-label: testlb-nginx
+    pod-label: testlb-server
   ports:
   - protocol: TCP
     port: 80
@@ -43,9 +44,8 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: public
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/force-ssl-redirect: true
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   name: testlb-ingress
   namespace: test-load-balancer
 spec:
@@ -56,6 +56,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: testlb-nginx
+            name: testlb-server
             port:
               number: 80

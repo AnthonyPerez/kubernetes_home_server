@@ -4,6 +4,8 @@ Assuming that the cluster setup was followed as described in the previous steps 
 
 If you run `microk8s kubectl -n ingress get svc` before creating the service above and it tells you that a service already exists, then something has diverged from the expectations of this setup document. You may already have load balancing set up. This document assumes that the microk8s ingress and metallb addons have been enabled.
 
+You can use the `setup/load_balancer/test_loadbalancer.yaml` manifest to quickly test the load balancer.
+
 ## Sources
 
 1. https://jonathangazeley.com/2020/12/30/load-balancing-ingress-with-metallb-on-microk8s/
