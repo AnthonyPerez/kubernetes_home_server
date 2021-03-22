@@ -46,24 +46,20 @@ subjects:
   name: kubedashboard-viewonly-account
   namespace: kube-system
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: v1
+kind: Service
 metadata:
   annotations:
-    kubernetes.io/ingress.class: public
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  name: dashboard-ingress
+    metallb.universe.tf/allow-shared-ip: "app-sharing-key"
+  name: dashboard-lb-service
   namespace: kube-system
 spec:
-  rules:
-  - http:
-      paths:
-      - path: /kubedashboard(/|$)(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: kubernetes-dashboard
-            port:
-              number: 443
+  selector:
+    k8s-app: "kubernetes-dashboard"
+  type: LoadBalancer
+  loadBalancerIP: 192.168.86.201
+  externalTrafficPolicy: Cluster
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 8443
