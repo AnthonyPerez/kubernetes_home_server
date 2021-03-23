@@ -9,7 +9,7 @@ metadata:
   name: rook-nfs-pv-claim
   namespace: test-nfs
 spec:
-  storageClassName: "worker201-store"
+  storageClassName: "node201-store"
   accessModes:
     - ReadWriteMany
   resources:

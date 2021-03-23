@@ -1,0 +1,1 @@
+microk8s kubectl -n kube-system describe secret $(microk8s kubectl -n kube-system get secret | grep kubedashboard-viewonly-account | awk '{print $1}')

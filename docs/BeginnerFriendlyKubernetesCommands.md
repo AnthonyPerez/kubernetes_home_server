@@ -6,3 +6,4 @@
 * `kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName --all-namespaces`
 * `kubectl get events`
 * `kubectl top nodes` (with the metrics server enabled.)
+* If you need to reset a container (e.g. to reload a mounted configmap) you can run `kubectl exec POD_NAME -c CONTAINER_NAME -- /sbin/killall5` or `kubectl exec POD_NAME -c CONTAINER_NAME -- reboot`

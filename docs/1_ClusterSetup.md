@@ -95,7 +95,7 @@ For each worker node do the following:
 1. On the master node (if you have high-availibility, which is enabled by default, pick an arbitrary but memorable node) run `microk8s add-node`.
 2. Copy the command created by the master node and execute it on the worker node you want to join the network.
 
-After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons.
+After joining all nodes, ssh into the master node and run `setup/cluster_setup/microk8s_master_init.sh` to enable add-ons. If you have any configuration preferences for add-ons, you may want to edit the `setup/cluster_setup/microk8s_master_init.sh` file. In particular the load balancer's range of allowed IPs should be configured to match the set of nodes' IP address.
 
 ### Debugging
 
@@ -116,13 +116,6 @@ Resource usage assumes you've followed the steps above and includes all services
 * Around 1GB per Pi with no add-ons enabled.
 * Around 1.25GB per Pi only high availability enabled.
 * Around 1.4GB per Pi with the add-ons enabled by the scripts above.
-
-# (Optional) Setup a user and access the dashboard
-
-* Use the command `kubectl -n kubernetes-dashboard edit service kubernetes-dashboard` and change the line that says `type: ClusterIP` to `type: NodePort` (it's near the bottom of the file).
-* Run `kubectl apply -f setup/rbac_setup/adminuser.yaml`
-* Run `bash setup/rbac_setup/get_token.sh`
-* The last command will print a token, the NodePort, and the node name that you need to connect on. Then go to https://"your Pi's IP address":"Node Port".
 
 # Sources
 

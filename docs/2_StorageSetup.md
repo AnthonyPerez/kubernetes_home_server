@@ -21,6 +21,7 @@ Run the following steps on each node with storage.
 5. Open `/etc/fstab` on each node and add all storage devices. You can find their UUIDs with `lsblk -f`. Use the following example:
     * `UUID=ce20c7d1-ccbd-4d54-8d3b-55574bd150ea       /mnt/hdd1/      ext4    defaults,noatime        0       0`
 6. Run `setup/storage_setup_nfs/prerequisites.sh`. Note: Run this script on all nodes, even those without the backing NFS storage device.
+7. Run `mkdir /mnt/hdd1/nfs` to make a directory named `nfs` on the mounted disk. This will be reserved for the NFS.
 
 ## Rook NFS Setup (Master Node)
 
