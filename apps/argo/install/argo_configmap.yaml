@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workflow-controller-configmap
+data:
+  # Weak hardware :/
+  parallelism: 1
+  nodeEvents: |
+    enabled: false
+  artifactRepository: |
+    archiveLogs: false
+    s3:
+      endpoint: minio.default:9000
+      bucket: argo
+      region: us-west-2
+      # insecure will disable TLS. Primarily used for minio installs not configured with TLS
+      # insecure: false
+      keyFormat: "my-artifacts\
+        /{{workflow.creationTimestamp.Y}}\
+        /{{workflow.creationTimestamp.m}}\
+        /{{workflow.creationTimestamp.d}}\
+        /{{workflow.name}}\
+        /{{pod.name}}"
+      accessKeySecret:
+        name: minio-credentials
+        key: accessKey
+      secretKeySecret:
+        name: minio-credentials
+        key: secretKey
+  # Default values that will apply to all Workflows from this controller, unless overridden on the Workflow-level
+  workflowDefaults: |
+    spec:
+      # must complete in 5d (432,000 seconds)
+      activeDeadlineSeconds: 432000
+      # keep workflows for 7d (604,800 seconds)
+      ttlStrategy:
+        secondsAfterCompletion: 604800
+      # delete all pods as soon as they complete
+      podGC:
+        strategy: OnPodCompletion
