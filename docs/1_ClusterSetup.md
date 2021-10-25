@@ -4,7 +4,7 @@
 
 Let N be the number of Pis you want in your cluster. I choose N = 3.
 
-1. N x Raspberry Pi 4 Model B (4GB)
+1. N x Raspberry Pi 4 Model B (4GB) - Try to go for the 8GB model, in hindsight 8GB would be much better because of the base level of memory usage by k8s and the general demand for memory.
 2. N x MicroSD card 32GB
 3. 1 x USB Micro SD Card Reader
 4. A raspberry pi cluster case.

@@ -12,6 +12,11 @@ Node 202 - 298Gi
 * NFS 100Gi - /mnt/hdd1/nfs/
 * NextCloud 50Gi - /mnt/hdd1/nextcloud/
 
+### Minio Buckets
+
+- "default" - no particular use.
+- "argo" - used by argo.
+
 ## Networking
 
 Apps are deployed using services of type `LoadBalanced` to the IP address `192.168.86.201` (the ingress already uses `192.168.86.200` and is a nice to have). For the sake of simplicity, all apps will use sequential ports starting from 9000. Here are the currently requisitioned ports.
@@ -23,12 +28,10 @@ Access each service by using `https://192.168.86.201:<HTTPS Port>` e.g. `https:/
 - Next Cloud
     - Port: 9001, TCP/HTTP
     - Port: 9002, TCP/HTTPS
-- Minio Operator
+- Minio
     - Port: 9003, TCP/HTTPS
-- Minio Console
-    - Port: 9004, TCP/HTTP
-    - Port: 9005, TCP/HTTPS
-
+- Argo
+    - Port: 9004, TCP/HTTPS
 
 ### Ingress
 

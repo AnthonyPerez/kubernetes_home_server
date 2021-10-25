@@ -2,19 +2,20 @@
 
 ## Install
 
-From the install directory run the following:
+- Login to the node where the minio persistent volume will be created and run `mkdir /mnt/hdd1/minio`.
+- From the install directory run the following:
+    - `kubectl apply -f namespace.yaml`
+    - `kubectl apply -f pv_pvc.yaml`
 
-- `kubectl apply -f namespace.yaml`
-- `kubectl apply -f pv.yaml`
-
-The secret name for the tenant is hardcoded in the `tenant.yaml` file as `minio-tenant-secret`. To create this secret run
+- The minio secret name is hardcoded in the chart and/or chart values as `minio-access-secret`. To create this secret run
 
 ```
-kubectl create secret generic -n minio minio-tenant-secret \
-    --from-literal=accessKey=<your-access-key> \
-    --from-literal=secretKey=<your-secret-key>
+kubectl create secret generic -n minio minio-access-secret \
+    --from-literal=accesskey=$(uuidgen) \
+    --from-literal=secretkey=$(uuidgen)
 ```
-- Run `kubectl get secret -n minio minio-tenant-secret` to check the results. `Data` should be `2` (one for each of the access key and secret key).
+- Run `kubectl get secret -n minio minio-access-secret` to check the results. `Data` should be `2` (one for each of the access key and secret key).
+- Run `kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.accesskey}" | base64 --decode` to see the access key.
 
 - Create a self signed certificate for TLS. Run
 ```
@@ -24,20 +25,37 @@ kubectl create secret generic -n minio tls-ssl-minio \
     --from-file=public.crt && \
 rm private.key public.crt
 ```
-The secret name `tls-ssl-minio` is hardcoded into the chart. The path to mount the TLS credentials is also hardcoded and is based on the user minio is running as. This may be a source of errors. 
+The secret name `tls-ssl-minio` is hardcoded into the chart and/or chart values. 
 
-Now run:
-- `helm install --namespace minio -f chart_values.yaml minio-release ./local_chart/`
-- `kubectl get all -n minio`
-- `kubectl apply -f tenant.yaml` The chart values for the tenant don't allow full customization, so instead we will create our own tenant. Create the tenant after the secret.
+- Now run:
+    - `helm install --namespace minio -f chart_values.yaml minio-release ./local_chart/`
+    - `kubectl get all -n minio`
 
 ## Access minio
 
-In my local copy of the charts I have hard coded in the `192.168.86.201` as the IP address and bounds the ports used by minio to the 9003-9005 range.
+- Minio should be accessible from `192.168.86.201:9003` over HTTPS.
 
-To log into the console navigate to the correct IP address and port. You will be prompted for a JWT. You can grab it with `kubectl get secret $(kubectl get serviceaccount console-sa --namespace minio -o jsonpath="{.secrets[0].name}") --namespace minio -o jsonpath="{.data.token}" | base64 --decode`.
+- The test includes a python example.
 
-- TODO - python example.
+## Test
+
+From inside the tests folder run
+
+- `kubectl apply -f test_namespace.yaml`
+-
+```
+kubectl create secret generic -n test-minio test-minio-secret \
+    --from-literal=accesskey=$(kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.accesskey}" | base64 --decode) \
+    --from-literal=secretkey=$(kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.secretkey}" | base64 --decode)
+```
+- `kubectl apply -f test_minio.yaml`
+
+- `kubectl get all -n test-minio`
+- `kubectl describe pod -n test-minio` If the pod doesn't fail then things are working.
+
+- `kubectl delete -f test_minio.yaml`
+- `kubectl delete secret -n test-minio test-minio-secret`
+- `kubectl delete -f test_namespace.yaml` Deleting the namespace will clean everything used for testing
 
 ## Update Chart Values
 
@@ -45,14 +63,33 @@ To log into the console navigate to the correct IP address and port. You will be
 
 ## Uninstall
 
-- `kubectl delete -f tenant.yaml`
 - `helm uninstall --namespace minio minio-release`
 - `kubectl delete secret -n minio tls-ssl-minio`
-- `kubectl delete secret -n minio minio-tenant-secret`
+- `kubectl delete secret -n minio minio-access-secret`
 - `kubectl delete -f pv.yaml`
-- `kubectl delete -f namespace.yaml`
+- `kubectl delete -f namespace.yaml`  Deleting the namespace will delete all the above resources.
+
+## Notes
+
+A couple caveats on what is in the charts.
+- The memory limit is very low. Minio may fail for large objects or many concurrent requests.
+- I set MINIO_API_REQUESTS_MAX to 4 to reduce memory usage due to processing multiple requests.
+- I have disabled the cache to save on memory.
+- The browser is still enabled.
+- I have not configured the domain names.
+
+The chart itself is not modified, but a local copy of the version used is provided.
 
 ## Links
+
+- [Legancy Minio Chart](https://github.com/minio/charts) - Used here because the operator chart does not support a standalone minio deployment (and is too heavy for the standalone use case).
+- [TLS on Minio](https://github.com/minio/minio/tree/master/docs/tls/kubernetes)
+- [Simple Standalone example](https://github.com/kubernetes/examples/tree/master/staging/storage/minio)
+- [Alternative Minio Chart - does not use the operator](https://github.com/minio/minio/tree/master/helm/minio)
+
+### Operator
+
+Note that [the operator does not support standalone mode](https://github.com/minio/operator/issues/677).
 
 - [Operator Installation](https://github.com/minio/operator/blob/master/README.md)
 - [Operator helm chart](https://github.com/minio/operator/tree/master/helm/minio-operator)
@@ -60,4 +97,3 @@ To log into the console navigate to the correct IP address and port. You will be
 - [If you want high performance automatic provisioning of PVCs](https://github.com/minio/direct-csi)
 - [Understanding the Tenant CRD](https://github.com/minio/operator/blob/master/helm/minio-operator/templates/tenant.yaml)
 - [Understanding the Tenant CRD (2)](https://github.com/minio/operator/blob/master/examples/kustomization/base/tenant.yaml)
-- [TLS on Minio](https://github.com/minio/minio/tree/master/docs/tls/kubernetes)

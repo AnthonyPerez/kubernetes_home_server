@@ -7,10 +7,9 @@ You can find the sources of the install file [here](https://github.com/argoproj/
 From the `install` folder run:
 - `kubectl apply -f argo_namespace.yaml`
 - `kubectl apply -n argo -f argo_v3.1.14_namespace-install.yaml`
-- `kubectl apply -n argo -f argo_configmap.yaml`
-- TODO minio credentials (see the argo configmap).
-- TODO setup minio bucket.
-- `bash install_cli_local.sh`  -- Note that this installs the argo CLI locally, it does nothing to your cluster.
+- `kubectl apply -n argo -f argo_configmap.yaml` Override the argo configmap which is the recommend way to configure argo.
+- `kubectl apply -n argo -f argo_server_service.yaml` Override the argo server service with our own that is load balanced.
+- `bash install_cli_local.sh`  -- Note that this installs the argo CLI locally, it does nothing to your cluster. It's also configured for the ARM64 architecture. Find the appropriate binary on [the github release page](https://github.com/argoproj/argo-workflows/releases/tag/v3.1.14). See more info [here](https://argoproj.github.io/argo-workflows/cli/) including connecting and setting up TLS.
 
 For workflow configuration see [here](https://argoproj.github.io/argo-workflows/configure-artifact-repository/) and [here](https://argoproj.github.io/argo-workflows/workflow-controller-configmap/).
 
