@@ -10,6 +10,11 @@ metadata:
       Finally, "reduce" merges all the mapped documents into a final document.
     workflows.argoproj.io/version: '>= 3.0.0'
 spec:
+  securityContext:
+    runAsNonRoot: false
+    # runAsNonRoot: true
+    # runAsUser: 1000
+  serviceAccountName: argo
   entrypoint: main
   arguments:
     parameters:

@@ -4,17 +4,26 @@ metadata:
   name: workflow-controller-configmap
 data:
   # Weak hardware :/
-  parallelism: 1
+  parallelism: "1"
   nodeEvents: |
     enabled: false
+  metricsConfig: |
+    enabled: false
+  containerRuntimeExecutor: pns
+  executor: |
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
   artifactRepository: |
     archiveLogs: false
     s3:
-      endpoint: minio.default:9000
+      endpoint: "minio-release.minio:9003"
       bucket: argo
-      region: us-west-2
-      # insecure will disable TLS. Primarily used for minio installs not configured with TLS
-      # insecure: false
       keyFormat: "my-artifacts\
         /{{workflow.creationTimestamp.Y}}\
         /{{workflow.creationTimestamp.m}}\
@@ -23,10 +32,10 @@ data:
         /{{pod.name}}"
       accessKeySecret:
         name: minio-credentials
-        key: accessKey
+        key: accesskey
       secretKeySecret:
         name: minio-credentials
-        key: secretKey
+        key: secretkey
   # Default values that will apply to all Workflows from this controller, unless overridden on the Workflow-level
   workflowDefaults: |
     spec:

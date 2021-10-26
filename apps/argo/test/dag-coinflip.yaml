@@ -7,6 +7,11 @@ metadata:
       This is an example of coin flip defined as a DAG.
       You can also run it in Python: https://couler-proj.github.io/couler/examples/#dag
 spec:
+  securityContext:
+    runAsNonRoot: false
+    # runAsNonRoot: true
+    # runAsUser: 1000
+  serviceAccountName: argo
   entrypoint: diamond
   templates:
   - name: diamond

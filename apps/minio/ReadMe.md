@@ -34,6 +34,8 @@ The secret name `tls-ssl-minio` is hardcoded into the chart and/or chart values.
 ## Access minio
 
 - Minio should be accessible from `192.168.86.201:9003` over HTTPS.
+- Get the access key via `kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.accesskey}" | base64 --decode`.
+- Get the secret key via `kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.secretkey}" | base64 --decode`.
 
 - The test includes a python example.
 
