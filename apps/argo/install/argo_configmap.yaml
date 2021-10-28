@@ -19,10 +19,12 @@ data:
       limits:
         cpu: 500m
         memory: 512Mi
+  # We use the node's IP instead of the k8s internal service address
+  # "minio-release.minio:9003" because of the way the certificate is configured.
   artifactRepository: |
     archiveLogs: false
     s3:
-      endpoint: "minio-release.minio:9003"
+      endpoint: "192.168.86.201:9003"
       bucket: argo
       keyFormat: "my-artifacts\
         /{{workflow.creationTimestamp.Y}}\
