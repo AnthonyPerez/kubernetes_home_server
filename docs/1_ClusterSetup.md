@@ -4,7 +4,7 @@
 
 Let N be the number of Pis you want in your cluster. I choose N = 3.
 
-1. N x Raspberry Pi 4 Model B (4GB)
+1. N x Raspberry Pi 4 Model B (4GB) - Try to go for the 8GB model, in hindsight 8GB would be much better because of the base level of memory usage by k8s and the general demand for memory.
 2. N x MicroSD card 32GB
 3. 1 x USB Micro SD Card Reader
 4. A raspberry pi cluster case.
@@ -52,7 +52,7 @@ power_state:
   mode: reboot
 ```
 
-5. Allow Ubuntu to boot; DO NOT try to log into Ubuntu as soon as possible. Wait until Cloud-Init runs. If you don't wait you may not be able to logon with the default user and passwd. At the end of the cloud-init,Ubuntu will be rebooted. Wait a couple of minutes for the server to boot. You will see the red power LED flick on and off once when the system reboots. Continue to wait as the system boots a second time.
+5. Allow Ubuntu to boot; DO NOT try to log into Ubuntu as soon as possible. Wait until Cloud-Init runs. If you don't wait you may not be able to logon with the default user and passwd. At the end of the cloud-init, Ubuntu will be rebooted. Wait a couple of minutes for the server to boot. You will see the red power LED flick on and off once when the system reboots. Continue to wait as the system boots a second time.
 
 You will need to connect to each Raspberry Pi in the following setup. Use the ethernet cable to plug the Pi into your computer (unfortunately one at a time). Alternatively, you can use your home WiFi (easier) if you set it up as in the steps above.
 
@@ -107,6 +107,15 @@ After joining all nodes, ssh into the master node and run `setup/cluster_setup/m
 
 * Relevant Issues
     * [Error adding 3rd node, fresh install](https://github.com/ubuntu/microk8s/issues/2065)
+
+* If you notice that logs are not being recorded for your nodes, it may be an error in the configuration of log2ram. You may have to check all your nodes, but to check a node do:
+  - `cd /var/log`
+  - `ls -lh .`  Check if the size of the log folder is near the size limit for log2ram (which is in `setup/cluster_setup/config_files/log2ram.conf`).
+  - `tail syslog` do you see a message about the storage device being full? Something like `systemd-journald[XXXX]: Failed to open system journal: No space left on device`.
+  - You may need to play with the settings in the config files for `setup/cluster_setup/config_files/log2ram.conf`. Consider setting `size` and `maxsize` in log rotate (see `/etc/logrotate.d` on your system) to lower, potentially much lower than the size limit for `log2ram` to avoid having so many logs that you run out of space in `log2ram`.
+  - In my configuration settings (`setup/cluster_setup/config_files/logrotate.d/`)I cap several of the typical log files by setting a maxsize option in the configuration.
+  - [An example configuration](https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/gci/configure-helper.sh#L542).
+  - To manually rotate logs run `logrotate /etc/logrotate.conf`. Adding the `-d` flag as in `logrotate -d /etc/logrotate.conf` will run logrotate in debug mode which will display what logs would be rotated without rotating the logs.
 
 
 # Resource Usage

@@ -4,7 +4,7 @@ metadata:
   name: node201-nfs-pv
 spec:
   capacity:
-    storage: 150Gi
+    storage: 100Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteMany
@@ -36,7 +36,7 @@ spec:
   - ReadWriteMany
   resources:
     requests:
-      storage: 150Gi
+      storage: 100Gi
 ---
 apiVersion: nfs.rook.io/v1alpha1
 kind: NFSServer

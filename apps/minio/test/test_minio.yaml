@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: python-script-config-map
+  namespace: test-minio
+data:
+  miniotest.py: |-
+    import time
+    import urllib3
+    from minio import Minio
+    with open("/mnt/minio/tenant/accessKey", "r") as _f:
+      access_key = _f.read()
+    with open("/mnt/minio/tenant/secretKey", "r") as _f:
+      secret_key = _f.read()
+    # We don't setup the CA verification properly in this example.
+    http_client = urllib3.PoolManager(
+      num_pools=4,
+      cert_reqs='CERT_NONE',
+      assert_hostname=False,
+    )
+    client = Minio(
+      "minio-release.minio:9003",
+      access_key=access_key,
+      secret_key=secret_key,
+      http_client=http_client,
+    )
+    print(client.list_buckets())
+    time.sleep(999999)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio-test
+  name: minio-test
+  namespace: test-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio-test
+  template:
+    metadata:
+      labels:
+        app: minio-test
+    spec:
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: test-minio-secret
+          items:
+          - key: accesskey
+            path: accessKey
+          - key: secretkey
+            path: secretKey
+      - name: configmap-volume
+        configMap:
+          defaultMode: 0700
+          name: python-script-config-map
+      containers:
+      - image: python:alpine3.6
+        imagePullPolicy: IfNotPresent
+        name: test-python
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /mnt/minio/tenant
+        - name: configmap-volume
+          mountPath: /mnt/python/script/miniotest.py
+          readOnly: true
+          subPath: miniotest.py
+        command:
+          - "/bin/sh"
+          - "-c"
+        args:
+          - |
+            pip install minio &&
+            python /mnt/python/script/miniotest.py

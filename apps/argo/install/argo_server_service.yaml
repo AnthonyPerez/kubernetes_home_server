@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: argo-server
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "app-sharing-key"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.86.201
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: web
+    port: 9004
+    targetPort: 2746
+  selector:
+    app: argo-server

@@ -1,0 +1,15 @@
+/var/log/pods/*.log
+/var/log/pods/*/*.log
+/var/log/pods/*/*/*.log
+/var/log/pods/*/*/*/*.log
+{
+        rotate 2
+        copytruncate
+        missingok
+        notifempty
+        compress
+        maxsize 256K
+        daily
+        dateext
+        dateformat -%Y%m%d-%s
+}

@@ -4,12 +4,18 @@
 
 Node 201 - 298Gi
 
-* NFS 150Gi - /mnt/hdd1/nfs/
+* NFS 100Gi - /mnt/hdd1/nfs/
+* Minio 148Gi - /mnt/hdd1/minio/
 
 Node 202 - 298Gi
 
 * NFS 100Gi - /mnt/hdd1/nfs/
 * NextCloud 50Gi - /mnt/hdd1/nextcloud/
+
+### Minio Buckets
+
+- "default" - no particular use.
+- "argo" - used by argo.
 
 ## Networking
 
@@ -22,8 +28,19 @@ Access each service by using `https://192.168.86.201:<HTTPS Port>` e.g. `https:/
 - Next Cloud
     - Port: 9001, TCP/HTTP
     - Port: 9002, TCP/HTTPS
-
+- Minio
+    - Port: 9003, TCP/HTTPS
+- Argo
+    - Port: 9004, TCP/HTTPS
 
 ### Ingress
 
 It would be preferable to use the ingress mechanism rather than services, but this requires either the managing the host names of the ingress resources or managing DNS and certifications. To avoid that, I've decided to use the scheme above.
+
+## A note on power draw
+
+The Pi 4B runs somewhere between 3W at idle and 6W at max CPU based on benchmarks you'll fine googling around. That's 2.2-4.4 kWh. At $0.22/kWh (as an example), you'll spend $0.97/month for each Pi.
+
+# A note on namespaces
+
+Many of the apps deployed here are deployed in their own namespace. However, this is not [standard practice](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/).

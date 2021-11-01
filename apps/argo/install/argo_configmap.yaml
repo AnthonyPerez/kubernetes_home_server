@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workflow-controller-configmap
+data:
+  # Weak hardware :/
+  parallelism: "1"
+  nodeEvents: |
+    enabled: false
+  metricsConfig: |
+    enabled: false
+  containerRuntimeExecutor: pns
+  executor: |
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  # We use the node's IP instead of the k8s internal service address
+  # "minio-release.minio:9003" because of the way the certificate is configured.
+  artifactRepository: |
+    archiveLogs: false
+    s3:
+      endpoint: "192.168.86.201:9003"
+      bucket: argo
+      keyFormat: "my-artifacts\
+        /{{workflow.creationTimestamp.Y}}\
+        /{{workflow.creationTimestamp.m}}\
+        /{{workflow.creationTimestamp.d}}\
+        /{{workflow.name}}\
+        /{{pod.name}}"
+      accessKeySecret:
+        name: minio-credentials
+        key: accesskey
+      secretKeySecret:
+        name: minio-credentials
+        key: secretkey
+  # Default values that will apply to all Workflows from this controller, unless overridden on the Workflow-level
+  workflowDefaults: |
+    spec:
+      # must complete in 5d (432,000 seconds)
+      activeDeadlineSeconds: 432000
+      # keep workflows for 7d (604,800 seconds)
+      ttlStrategy:
+        secondsAfterCompletion: 604800
+      # delete all pods as soon as they complete
+      podGC:
+        strategy: OnPodCompletion
