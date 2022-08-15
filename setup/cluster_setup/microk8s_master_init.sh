@@ -15,5 +15,6 @@ microk8s enable helm3 && \
 microk8s enable storage && \ 
 microk8s enable metallb:192.168.86.200-192.168.86.202 && \
 microk8s enable metrics-server && \ 
-microk8s enable registry && \ 
+# We will set up our own registry.
+# microk8s enable registry && \ 
 microk8s.kubectl get all --all-namespaces

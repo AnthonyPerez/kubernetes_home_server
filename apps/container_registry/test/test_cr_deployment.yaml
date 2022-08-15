@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-busy-box-deployment
+  namespace: test-container-registry
+  labels:
+    app: test-busy-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-busy-box
+  template:
+    metadata:
+      labels:
+        app: test-busy-box
+    spec:
+      containers:
+      - name: busybox
+        image: 192.168.86.201:9005/busybox:latest
+        args:
+          - date
+      imagePullSecrets:
+        - name: test-image-pull-secret 
