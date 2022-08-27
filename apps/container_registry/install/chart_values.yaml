@@ -1,0 +1,42 @@
+
+# The CR image
+image:
+  tag: "2.7.1"
+
+# We will use minio instead
+persistence:
+  enabled: false
+
+service:
+  port: 9005
+  type: LoadBalancer
+  loadBalancerIP: 192.168.86.201
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "app-sharing-key"
+
+s3:
+  region: us-east-1
+  regionEndpoint: 192.168.86.201:9003
+  bucket: "container-registry"
+  rootdirectory: "cr-images"
+  encrypt: true
+  secure: true
+
+resources:
+  limits:
+   cpu: 400m
+   memory: 256Mi
+  requests:
+   cpu: 100m
+   memory: 256Mi
+
+garbageCollect:
+  enabled: true
+  deleteUntagged: true
+  schedule: "0 1 * * *"
+
+tlsSecretName: container-registry-tls
+
+secrets:
+  s3:
+    secretRef: minio-credentials

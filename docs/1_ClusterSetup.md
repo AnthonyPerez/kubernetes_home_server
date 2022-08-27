@@ -15,6 +15,8 @@ Let N be the number of Pis you want in your cluster. I choose N = 3.
 
 Inspired by the guides linked below, we will run a router on one of the master nodes to create a private network for the cluster. This approach will not scale well and will introduce a single point of failure, but will be sufficient for our purposes.
 
+In general it would be wise to think about the network architecture up front. Two alternatives to consider are (1) using a wired network with a switch and (2) setting up a guest network or alternative SSID to connect the cluster over WiFi.
+
 ### Install Ubuntu 20.04 LTS on your SD cards
 
 For each SD card, run through the following two steps (will take between 10 minutes to an hour per SD card.) 

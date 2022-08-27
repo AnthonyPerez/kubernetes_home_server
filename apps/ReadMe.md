@@ -32,6 +32,8 @@ Access each service by using `https://192.168.86.201:<HTTPS Port>` e.g. `https:/
     - Port: 9003, TCP/HTTPS
 - Argo
     - Port: 9004, TCP/HTTPS
+- Container Registry
+    - Port: 9005, TCP/HTTPS
 
 ### Ingress
 
@@ -39,7 +41,7 @@ It would be preferable to use the ingress mechanism rather than services, but th
 
 ## A note on power draw
 
-The Pi 4B runs somewhere between 3W at idle and 6W at max CPU based on benchmarks you'll fine googling around. That's 2.2-4.4 kWh. At $0.22/kWh (as an example), you'll spend $0.97/month for each Pi.
+The Pi 4B runs somewhere between 3W at idle and 6W at max CPU based on benchmarks you'll fine googling around. That's 2.2-4.4 kWh/month. At $0.22/kWh (as an example), you'll spend $0.97/month for each Pi.
 
 # A note on namespaces
 
