@@ -124,6 +124,7 @@ After joining all nodes, ssh into the master node and run `setup/cluster_setup/m
 
 Resource usage assumes you've followed the steps above and includes all services running on the machine, not just microk8s.
 
+Memory:
 * Around 1GB per Pi with no add-ons enabled.
 * Around 1.25GB per Pi only high availability enabled.
 * Around 1.4GB per Pi with the add-ons enabled by the scripts above.

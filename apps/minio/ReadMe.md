@@ -61,7 +61,8 @@ kubectl create secret generic -n test-minio test-minio-secret \
 
 ## Update Chart Values
 
-- `helm upgrade -f chart_values.yaml minio-release minio/minio-operator`
+- First dry run with `helm upgrade --namespace minio --dry-run -f chart_values.yaml minio-release ./local_chart/` 
+- `helm upgrade --namespace minio -f chart_values.yaml minio-release ./local_chart/`
 
 ## Uninstall
 
