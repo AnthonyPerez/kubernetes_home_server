@@ -5,7 +5,7 @@
 Node 201 - 298Gi
 
 * NFS 100Gi - /mnt/hdd1/nfs/
-* Minio 148Gi - /mnt/hdd1/minio/
+* Minio 198Gi - /mnt/hdd1/minio/
 
 Node 202 - 298Gi
 
@@ -16,6 +16,7 @@ Node 202 - 298Gi
 
 - "default" - no particular use.
 - "argo" - used by argo.
+- "container-registry" - used by the container registry.
 
 ## Networking
 

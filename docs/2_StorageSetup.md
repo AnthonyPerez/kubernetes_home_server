@@ -17,8 +17,8 @@ Run the following steps on each node with storage.
     * If your device already has a file system use `fdisk` to delete any partitions on the disk and free all the space.
 3. Use `fdisk /dev/sda`, replacing `sda` with your device name to remove all partitions and create a new one. First type p to see the partitions. If there are none, type n, p, 1 and choose the defaults, then hit w to save (or q if you made a mistake and want to quit).
     * Record the space available on each device using `fdisk`. The example configs use `298Gi`.
-4. Use `mkfs.ext4` to create a filesystem on the new partition.
-5. Open `/etc/fstab` on each node and add all storage devices. You can find their UUIDs with `lsblk -f`. Use the following example:
+4. Use `mkfs.ext4` to create a filesystem on the new partition. For example with `mkfs.ext4 /dev/sda1`.
+5. Open `/etc/fstab` on each node and add all storage devices. You can find their UUIDs with `lsblk -f`. You will have to reboot after changing this file. Use the following example:
     * `UUID=ce20c7d1-ccbd-4d54-8d3b-55574bd150ea       /mnt/hdd1/      ext4    defaults,noatime        0       0`
 6. Run `setup/storage_setup_nfs/prerequisites.sh`. Note: Run this script on all nodes, even those without the backing NFS storage device.
 7. Run `mkdir /mnt/hdd1/nfs` to make a directory named `nfs` on the mounted disk. This will be reserved for the NFS.
@@ -58,6 +58,7 @@ If you would like to use the rook NFS storage class as the default storage class
 
 * Make sure RBAC is enabled on the cluster. Otherwise PVC will stay stuck in a pending state.
 * Make sure you are running microk8s with kubectl and kube-apiserver in priviledged mode.
+* I was not able to use a 2TB hard disk drive because the Raspberrypi does not provide enough power to the drive.
 
 ## Sources
 
