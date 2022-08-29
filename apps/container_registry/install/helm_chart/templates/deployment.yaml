@@ -124,6 +124,8 @@ spec:
                   name: {{ template "docker-registry.fullname" . }}-secret
                   key: azureContainer
 {{- else if eq .Values.storage "s3" }}
+            - name: REGISTRY_STORAGE_S3_SKIPVERIFY
+              value: "true"
             {{- if or (and .Values.secrets.s3.secretKey .Values.secrets.s3.accessKey) .Values.secrets.s3.secretRef }}
             - name: REGISTRY_STORAGE_S3_ACCESSKEY
               valueFrom:

@@ -19,7 +19,7 @@ kubectl create secret generic -n minio minio-access-secret \
 
 - Create a self signed certificate for TLS. Run
 ```
-openssl req -subj '/CN=192.168.86.201' -x509 -newkey rsa:4096 -nodes -keyout private.key -out public.crt -days 10000 && \
+openssl req -subj '/CN=192.168.86.201' -addext "subjectAltName = IP:192.168.86.201" -x509 -newkey rsa:4096 -nodes -keyout private.key -out public.crt -days 10000 && \
 kubectl create secret generic -n minio tls-ssl-minio \
     --from-file=private.key \
     --from-file=public.crt && \
@@ -36,6 +36,7 @@ The secret name `tls-ssl-minio` is hardcoded into the chart and/or chart values.
 - Minio should be accessible from `192.168.86.201:9003` over HTTPS.
 - Get the access key via `kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.accesskey}" | base64 --decode`.
 - Get the secret key via `kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.secretkey}" | base64 --decode`.
+- In one command: `echo "Access Key: "$(kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.accesskey}" | base64 --decode)" Password: "$(kubectl get secret -n minio minio-access-secret -o jsonpath="{.data.secretkey}" | base64 --decode)`
 
 - The test includes a python example.
 
