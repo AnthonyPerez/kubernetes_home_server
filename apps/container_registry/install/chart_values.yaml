@@ -3,6 +3,8 @@
 image:
   tag: "2.7.1"
 
+storage: s3
+
 # We will use minio instead
 persistence:
   enabled: false
@@ -18,16 +20,16 @@ s3:
   region: us-east-1
   regionEndpoint: 192.168.86.201:9003
   bucket: "container-registry"
-  rootdirectory: "cr-images"
-  encrypt: true
+  # rootdirectory: "/cr"
+  encrypt: false
   secure: true
 
 resources:
   limits:
-   cpu: 400m
+   cpu: 600m
    memory: 256Mi
   requests:
-   cpu: 100m
+   cpu: 200m
    memory: 256Mi
 
 garbageCollect:

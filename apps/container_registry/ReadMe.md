@@ -10,6 +10,8 @@ The helm chart copied here is a fork, I do not take credit. See the link below.
 
 - cronjob.yaml
     - `apiVersion: batch/v1` > `apiVersion: batch/v1beta1` Due to my kubernetes version.
+- deployment.yaml
+    - Added an environment variable named `REGISTRY_STORAGE_S3_SKIPVERIFY` with a value of `"true"` to skip TLS verification for minio.
 
 ## Deployment Steps
 
@@ -81,12 +83,20 @@ Setting up TLS access to the private registry will depend on your specific host.
 Grab needed files from your cert secret:
 
 ```
-kubectl get secret -n container-registry container-registry-tls -o jsonpath="{.data.tls\.crt}" | base64 --decode > ca.crt
+kubectl get secret -n container-registry container-registry-tls -o jsonpath="{.data.tls\.crt}" | base64 --decode > microk8s_user_private_registry.crt
 ```
 
-Copy the `ca.crt` file from the machine that ran the command above onto your local machine, then delete `ca.crt` from the machine that created it. On windows, right click on the `ca.crt` in File Explorer and install the certificate. When selecting a store, you can let the wizard choose automatically. Restart Docker. If you need to remove the certificate later, run `inetcpl.cpl` in a command prompt. This will open a window. In the window click content followed by certificates. Find and remove the certificate you added.
+Copy the `microk8s_user_private_registry.crt` file from the machine that ran the command above onto your local machine, then delete `microk8s_user_private_registry.crt` from the machine that created it. On windows, right click on the `microk8s_user_private_registry.crt` in File Explorer and install the certificate. When selecting a store, you can let the wizard choose automatically. Restart Docker. If you need to remove the certificate later, run `inetcpl.cpl` in a command prompt. This will open a window. In the window click content followed by certificates. Find and remove the certificate you added.
 
-Run `docker login 192.168.86.201:9005` and follow the prompts.
+If you're using ubuntu for your docker building, including WSL for windows, you will also need to trust the CA in the WSL VM. Copy the `microk8s_user_private_registry.crt` file to `/usr/local/share/ca-certificates` and run `sudo update-ca-certificates`. You should rename the file to be consistent with the file name for on cluster nodes but the file must end in `.crt`. This will also add a file to `/etc/ssl/certs/`. If you want to remove the cert you will need to remove both these files.
+
+It's very odd but documented [here] that the client that is pushing for pulling against the registry also needs to trust the minio cert. Repeat the steps above with the minio cert. Here is show you grab it: 
+
+```
+kubectl get secret -n minio tls-ssl-minio -o jsonpath="{.data.public\.crt}" | base64 --decode > microk8s_user_minio.crt
+```
+
+Run `docker login 192.168.86.201:9005` and follow the prompts. You may need to do this on the WSL VM when using windows.
 
 Test as follows, replace IP_ADDRESS and PORT as appropriate.
 
@@ -95,6 +105,8 @@ docker image pull busybox && \
 docker tag busybox:latest IP_ADDRESS:PORT/busybox:latest && \
 docker push IP_ADDRESS:PORT/busybox:latest
 ```
+
+Make sure you see the image data stored in the minio bucket and not an empty dir. The empty dir's data will be under a directory like `/var/snap/microk8s/common/var/lib/kubelet/pods/50ac91a0-50e9-4bbc-bd5b-1d54e393b308/volumes/kubernetes.io~empty-dir/data/docker`.
 
 Resources:
 - [Official Docker Resource 1](https://docs.docker.com/desktop/faqs/windowsfaqs/#how-do-i-add-custom-ca-certificates)
@@ -112,7 +124,8 @@ Use `snap info microk8s` to determine your version of microk8s. The following wi
 On each node run the following command to place the certificate file at the appropriate location (it must be in the `/etc/ssl/certs/` directory but the name does not matter):
 
 ```
-kubectl get secret -n container-registry container-registry-tls -o jsonpath="{.data.tls\.crt}" | base64 --decode > /etc/ssl/certs/microk8s_user_private_registry.pem
+kubectl get secret -n container-registry container-registry-tls -o jsonpath="{.data.tls\.crt}" | base64 --decode > /etc/ssl/certs/microk8s_user_private_registry.pem && \
+kubectl get secret -n minio tls-ssl-minio -o jsonpath="{.data.public\.crt}" | base64 --decode > /etc/ssl/certs/microk8s_user_minio.crt
 ```
 
 Reboot your node e.g. with the `reboot` command.
@@ -146,6 +159,23 @@ Then run `kubectl get pods -n test-container-registry` and `kubectl describe pod
 - [Containerd Guide](https://github.com/containerd/cri/blob/master/docs/registry.md#configure-registry-tls-communication)
 - [The cert must be in the /etc/ssl/certs/ directory.](https://discuss.kubernetes.io/t/microk8s-cant-pull-image-from-a-private-registry-with-ssl-self-signed-certificate/11604/2)
 - [DaemonSet Solution](https://stackoverflow.com/questions/53545732/how-do-i-access-a-private-docker-registry-with-a-self-signed-certificate-using-k)
+
+
+## Update Chart Values
+
+First dry run with
+
+```
+{ \
+    cat chart_values.yaml; \
+    echo "  htpasswd: "$(kubectl get secret -n container-registry container-registry-htpasswd -o jsonpath="{.data.htpasswd}" | base64 --decode); \
+} \
+| cat > updated_chart_values.yaml && \
+helm upgrade --dry-run --namespace container-registry -f updated_chart_values.yaml container-registry ./helm_chart/ && \
+rm updated_chart_values.yaml
+```
+
+Then remove the dry run flag to do the real run.
 
 ## Guides
 
