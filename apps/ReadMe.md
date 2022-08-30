@@ -9,14 +9,13 @@ Node 201 - 298Gi
 
 Node 202 - 298Gi
 
-* NFS 100Gi - /mnt/hdd1/nfs/
 * NextCloud 50Gi - /mnt/hdd1/nextcloud/
+* Container Registry 198Gi - /mnt/hdd1/container_registry/
 
 ### Minio Buckets
 
 - "default" - no particular use.
 - "argo" - used by argo.
-- "container-registry" - used by the container registry.
 
 ## Networking
 

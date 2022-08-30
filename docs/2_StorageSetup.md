@@ -34,7 +34,7 @@ On the master node (with microk8s in high availability every node is a master no
     * The node names
     * Matching names for the PV and PVC across each set of PV+PVC+NFSServer
 
-Note that we use two NFSServers in the example (even though multiple claims can be attached to the same server) because the server pod must run on the same node as the disk it is accessing when we use local persistent volumes. Our persistent volumes are on different nodes in the example. But one NFSServer should be used for each node (with attached storage), and create a share for all of the persistent volumes on the node.
+Note that we use one NFSServers in the example (even though multiple claims can be attached to the same server) because the server pod must run on the same node as the disk it is accessing when we use local persistent volumes. One NFSServer should be used for each node (with attached storage), and create a share for all of the persistent volumes on the node.
  
 2. Open `setup/storage_setup_nfs/sc.yaml` and create one storageClass for each share.
     * Note that the provisioner API path also changes with the `NFSServer` name. `nfs.rook.io/{NFSServer Name}-provisioner`
@@ -52,7 +52,7 @@ If you would like to use the rook NFS storage class as the default storage class
 ## Test things
 
 * Use `kubectl apply -f setup/storage_setup_nfs/test_nfs.yaml` to setup a small test deployment that has 5 busy boxes reading and writing to a single NFS PVC.
-* Use `kubectl delete -f setup/storage_setup_nfs/test_nfs.yaml` to tear it down.
+* Use `kubectl delete -f setup/storage_setup_nfs/test_nfs.yaml` to tear it down. The test may also create persistent volumes that need to be torn down. Check with `kubectl get pv`.
 
 ## Debugging
 

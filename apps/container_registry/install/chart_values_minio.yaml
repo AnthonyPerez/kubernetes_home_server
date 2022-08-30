@@ -3,12 +3,11 @@
 image:
   tag: "2.7.1"
 
-storage: filesystem
+storage: s3
 
 # We will use minio instead
 persistence:
-  enabled: true
-  existingClaim: node202-container-registry-pvc
+  enabled: false
 
 service:
   port: 9005
@@ -16,6 +15,14 @@ service:
   loadBalancerIP: 192.168.86.201
   annotations:
     metallb.universe.tf/allow-shared-ip: "app-sharing-key"
+
+s3:
+  region: us-east-1
+  regionEndpoint: 192.168.86.201:9003
+  bucket: "container-registry"
+  # rootdirectory: "/cr"
+  encrypt: false
+  secure: true
 
 resources:
   limits:
@@ -33,4 +40,5 @@ garbageCollect:
 tlsSecretName: container-registry-tls
 
 secrets:
-  # The installation readme adds more here with a command.
+  s3:
+    secretRef: minio-credentials
